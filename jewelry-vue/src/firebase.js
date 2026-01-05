@@ -2,14 +2,13 @@ import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
 
-// Tu configuración de Firebase - REEMPLAZA CON TUS DATOS
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_PROYECTO.firebaseapp.com",
-  projectId: "TU_PROYECTO",
-  storageBucket: "TU_PROYECTO.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "TU_APP_ID"
+  apiKey: "AIzaSyBpPx8c4NMCkM5hHDlJAeS5ErkHFLDyvxw",
+  authDomain: "lamarkesa-b827f.firebaseapp.com",
+  projectId: "lamarkesa-b827f",
+  storageBucket: "lamarkesa-b827f.firebasestorage.app",
+  messagingSenderId: "508916996192",
+  appId: "1:508916996192:web:cc068e1515b71239978b05"
 }
 
 const app = initializeApp(firebaseConfig)
