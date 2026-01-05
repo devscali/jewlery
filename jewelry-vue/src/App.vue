@@ -1,10 +1,13 @@
 <script setup>
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useJewelry } from './composables/useJewelry'
 import StatsBar from './components/StatsBar.vue'
 import ActionsBar from './components/ActionsBar.vue'
 import SearchFilter from './components/SearchFilter.vue'
 import JewelryTable from './components/JewelryTable.vue'
+import AIImportModal from './components/AIImportModal.vue'
+
+const showAIModal = ref(false)
 
 const {
   loading,
@@ -151,6 +154,26 @@ const downloadFile = (content, filename, type) => {
   a.click()
   URL.revokeObjectURL(url)
 }
+
+// AI Import
+const handleAIImport = async (items) => {
+  try {
+    let imported = 0
+    for (const item of items) {
+      await addJewelry({
+        name: item.name || 'Unnamed',
+        category: item.category || 'other',
+        price: parseFloat(item.price) || 0,
+        sku: item.sku || '',
+        image: ''
+      })
+      imported++
+    }
+    alert(`Imported ${imported} items!`)
+  } catch (error) {
+    alert('Error importing items: ' + error.message)
+  }
+}
 </script>
 
 <template>
@@ -167,6 +190,7 @@ const downloadFile = (content, filename, type) => {
       @export-json="handleExportJSON"
       @clear-all="handleClearAll"
       @import-excel="handleImportExcel"
+      @ai-import="showAIModal = true"
     />
 
     <SearchFilter
@@ -182,6 +206,13 @@ const downloadFile = (content, filename, type) => {
       @update="handleUpdate"
       @delete="handleDelete"
       @upload-image="handleUploadImage"
+    />
+
+    <!-- AI Import Modal -->
+    <AIImportModal
+      v-if="showAIModal"
+      @close="showAIModal = false"
+      @import="handleAIImport"
     />
   </div>
 </template>

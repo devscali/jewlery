@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 
-const emit = defineEmits(['export-csv', 'export-json', 'clear-all', 'import-excel'])
+const emit = defineEmits(['export-csv', 'export-json', 'clear-all', 'import-excel', 'ai-import'])
 
 const fileInput = ref(null)
 
@@ -20,6 +20,13 @@ const handleFileChange = (event) => {
 
 <template>
   <div class="actions-bar">
+    <button class="btn btn-ai" @click="emit('ai-import')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729z"/>
+      </svg>
+      AI Import
+    </button>
+
     <button class="btn btn-secondary" @click="handleImportClick">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
@@ -102,6 +109,17 @@ const handleFileChange = (event) => {
 
 .btn-danger:hover {
   background: rgba(220, 53, 69, 0.3);
+}
+
+.btn-ai {
+  background: linear-gradient(135deg, #10a37f 0%, #1a7f5a 100%);
+  color: #fff;
+  border: none;
+}
+
+.btn-ai:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 163, 127, 0.4);
 }
 
 @media (max-width: 600px) {
