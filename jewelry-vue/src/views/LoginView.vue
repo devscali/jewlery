@@ -2,50 +2,75 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { signInWithEmailAndPassword } from 'firebase/auth'
-import { auth } from '../firebase'
+import { doc, getDoc } from 'firebase/firestore'
+import { auth, db } from '../firebase'
 
 const router = useRouter()
-const username = ref('')
+const email = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
 
-// Credenciales hardcodeadas
-const USERS = {
-  'devs': {
-    password: 'devs123',
-    route: '/devs',
-    email: 'devs@markesa.com'
-  },
-  'admin': {
-    password: 'admin123',
-    route: '/admin',
-    email: 'admin@markesa.com'
-  }
+// Mapeo de emails a roles y rutas
+const USER_ROUTES = {
+  'devs@markesa.com': '/devs',
+  'admin@markesa.com': '/admin'
 }
 
 const handleLogin = async () => {
   error.value = ''
   loading.value = true
 
-  const user = USERS[username.value]
+  try {
+    // Autenticar con Firebase
+    const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value)
+    const user = userCredential.user
 
-  if (!user) {
-    error.value = 'Usuario no encontrado'
+    // Obtener el rol del usuario desde Firestore
+    const userDoc = await getDoc(doc(db, 'users', user.uid))
+
+    let userRole = null
+    let targetRoute = '/catalog'
+
+    if (userDoc.exists()) {
+      userRole = userDoc.data().role
+      localStorage.setItem('userRole', userRole)
+
+      // Determinar ruta según el rol
+      if (userRole === 'devs') {
+        targetRoute = '/devs'
+      } else if (userRole === 'admin') {
+        targetRoute = '/admin'
+      }
+    } else {
+      // Si no existe en Firestore, intentar determinar por email
+      const emailLower = user.email.toLowerCase()
+      if (USER_ROUTES[emailLower]) {
+        targetRoute = USER_ROUTES[emailLower]
+        const role = emailLower.includes('devs') ? 'devs' : 'admin'
+        localStorage.setItem('userRole', role)
+      }
+    }
+
+    router.push(targetRoute)
+  } catch (err) {
+    console.error('Error de login:', err)
+
+    // Mensajes de error más amigables
+    if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+      error.value = 'Email o contraseña incorrectos'
+    } else if (err.code === 'auth/user-not-found') {
+      error.value = 'Usuario no encontrado'
+    } else if (err.code === 'auth/invalid-email') {
+      error.value = 'Email inválido'
+    } else if (err.code === 'auth/too-many-requests') {
+      error.value = 'Demasiados intentos. Intenta más tarde'
+    } else {
+      error.value = 'Error al iniciar sesión: ' + err.message
+    }
+  } finally {
     loading.value = false
-    return
   }
-
-  if (password.value !== user.password) {
-    error.value = 'Contraseña incorrecta'
-    loading.value = false
-    return
-  }
-
-  // Simular autenticación exitosa y redirigir
-  localStorage.setItem('userRole', username.value)
-  router.push(user.route)
-  loading.value = false
 }
 
 const goToCatalog = () => {
@@ -63,14 +88,14 @@ const goToCatalog = () => {
 
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
-          <label for="username">Usuario</label>
+          <label for="email">Email</label>
           <input
-            id="username"
-            v-model="username"
-            type="text"
-            placeholder="devs o admin"
+            id="email"
+            v-model="email"
+            type="email"
+            placeholder="tu-email@markesa.com"
             required
-            autocomplete="username"
+            autocomplete="email"
           />
         </div>
 
@@ -105,8 +130,8 @@ const goToCatalog = () => {
       </button>
 
       <div class="login-info">
-        <p><strong>Usuario devs:</strong> Acceso completo al sistema (versión completa)</p>
-        <p><strong>Usuario admin:</strong> Panel de administración</p>
+        <p><strong>devs@markesa.com:</strong> Acceso completo al sistema (versión completa)</p>
+        <p><strong>admin@markesa.com:</strong> Panel de administración</p>
         <p><strong>Catálogo:</strong> Vista pública sin login</p>
       </div>
     </div>

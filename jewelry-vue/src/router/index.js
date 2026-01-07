@@ -31,17 +31,37 @@ const router = createRouter({
   ]
 })
 
-// Navigation guard para proteger rutas
-router.beforeEach((to, from, next) => {
+// Navigation guard para proteger rutas con validación de roles
+router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  const requiredRole = to.meta.requiredRole
   const isAuthenticated = auth.currentUser
 
   if (requiresAuth && !isAuthenticated) {
     // Redirigir al login si no está autenticado
     next('/')
-  } else {
-    next()
+    return
   }
+
+  // Si la ruta requiere un rol específico, validar
+  if (requiredRole && isAuthenticated) {
+    const userRole = localStorage.getItem('userRole')
+
+    // Si no hay rol en localStorage o no coincide, redirigir
+    if (!userRole || userRole !== requiredRole) {
+      // Redirigir según el rol que tenga
+      if (userRole === 'devs') {
+        next('/devs')
+      } else if (userRole === 'admin') {
+        next('/admin')
+      } else {
+        next('/catalog')
+      }
+      return
+    }
+  }
+
+  next()
 })
 
 export default router

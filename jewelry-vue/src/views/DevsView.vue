@@ -1,19 +1,28 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { signOut } from 'firebase/auth'
+import { auth } from '../firebase'
 
 const router = useRouter()
 const iframeRef = ref(null)
 
-const logout = () => {
-  localStorage.removeItem('userRole')
-  router.push('/')
+const logout = async () => {
+  try {
+    await signOut(auth)
+    localStorage.removeItem('userRole')
+    router.push('/')
+  } catch (error) {
+    console.error('Error al cerrar sesión:', error)
+  }
 }
 
 onMounted(() => {
-  // Verificar que el usuario tenga el rol correcto
+  // Verificar que el usuario tenga el rol correcto y esté autenticado
   const userRole = localStorage.getItem('userRole')
-  if (userRole !== 'devs') {
+  const currentUser = auth.currentUser
+
+  if (!currentUser || userRole !== 'devs') {
     router.push('/')
   }
 })
