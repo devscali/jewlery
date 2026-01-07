@@ -1,11 +1,17 @@
 <script setup>
 import { useAuth } from './composables/useAuth'
 import { useRouter, useRoute } from 'vue-router'
+import { computed } from 'vue'
 import UserAuth from './components/UserAuth.vue'
 
 const { user, loading } = useAuth()
 const router = useRouter()
 const route = useRoute()
+
+// Rutas que no deben mostrar el navbar
+const hideNavbar = computed(() => {
+  return route.path === '/' || route.path === '/devs'
+})
 
 const goToAdmin = () => {
   router.push('/admin')
@@ -14,14 +20,25 @@ const goToAdmin = () => {
 const goToCatalog = () => {
   router.push('/catalog')
 }
+
+const goToHome = () => {
+  router.push('/')
+}
 </script>
 
 <template>
   <div id="app">
-    <!-- Navigation Bar -->
-    <nav class="navbar">
+    <!-- Navigation Bar (oculto en login y devs) -->
+    <nav v-if="!hideNavbar" class="navbar">
       <div class="nav-content">
         <div class="nav-links">
+          <button
+            @click="goToHome"
+            :class="{ active: route.path === '/' }"
+            class="nav-btn"
+          >
+            Inicio
+          </button>
           <button
             @click="goToCatalog"
             :class="{ active: route.path === '/catalog' }"

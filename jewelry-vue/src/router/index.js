@@ -6,7 +6,9 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/catalog'
+      name: 'Login',
+      component: () => import('../views/LoginView.vue'),
+      meta: { public: true }
     },
     {
       path: '/catalog',
@@ -18,19 +20,25 @@ const router = createRouter({
       path: '/admin',
       name: 'Admin',
       component: () => import('../views/AdminView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, requiredRole: 'admin' }
+    },
+    {
+      path: '/devs',
+      name: 'Devs',
+      component: () => import('../views/DevsView.vue'),
+      meta: { requiresAuth: true, requiredRole: 'devs' }
     }
   ]
 })
 
-// Navigation guard para proteger rutas de admin
+// Navigation guard para proteger rutas
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const isAuthenticated = auth.currentUser
 
   if (requiresAuth && !isAuthenticated) {
-    // Redirigir al catálogo si no está autenticado
-    next('/catalog')
+    // Redirigir al login si no está autenticado
+    next('/')
   } else {
     next()
   }
